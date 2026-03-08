@@ -1,0 +1,18 @@
+<?php
+require_once __DIR__.'/../includes/config.php';
+require_once __DIR__.'/../includes/queries.php';
+require_once __DIR__.'/../includes/auth.php';
+require_once __DIR__.'/../includes/functions.php';
+requireAdmin();
+$categories=fetchCategories();
+if($_SERVER['REQUEST_METHOD']==='POST'){
+ $data=[
+  'category_id'=>(int)$_POST['category_id'],'title'=>trim($_POST['title']),'author'=>trim($_POST['author']),'publisher'=>trim($_POST['publisher']),'publish_year'=>(int)($_POST['publish_year']?:0),'binding_type'=>trim($_POST['binding_type']),'paper_type'=>trim($_POST['paper_type']),'language'=>trim($_POST['language']),'price'=>(float)$_POST['price'],'discount_percent'=>(int)($_POST['discount_percent']??0),'quantity'=>(int)$_POST['quantity'],'is_pickup_available'=>(int)($_POST['is_pickup_available']??1),'short_description'=>trim($_POST['short_description']),'full_description'=>trim($_POST['full_description']),'image'=>trim($_POST['image']),'is_new'=>isset($_POST['is_new'])?1:0,'is_popular'=>isset($_POST['is_popular'])?1:0,'is_recommended'=>isset($_POST['is_recommended'])?1:0,'is_coming_soon'=>isset($_POST['is_coming_soon'])?1:0
+ ];
+ if($data['price']<=0||$data['quantity']<0) setFlash('danger','Проверьте цену и количество.');
+ elseif(createBook($data)){ setFlash('success','Книга добавлена.'); redirect('books.php'); }
+ else setFlash('danger','Ошибка сохранения книги.');
+}
+$pageTitle='Добавление книги'; $assetPrefix = '../'; $rootPrefix = '../'; include __DIR__.'/../includes/header.php'; ?>
+<div class="container py-4"><h1>Добавление книги</h1><?php include __DIR__.'/_book_form.php'; ?></div>
+<?php include __DIR__.'/../includes/footer.php'; ?>

@@ -1,0 +1,27 @@
+body { background:#f6f2ec; font-family:'Segoe UI',sans-serif; color:#2c2a28; }
+.hero-banner{ background:linear-gradient(130deg,#fff7ef,#f5e4ce); min-height:260px; }
+.mini-banner{ min-height:120px; display:flex; align-items:center; font-weight:700; }
+.mini-banner-blue{ background:linear-gradient(135deg,#4e86d6,#1b5eb8); }
+.mini-banner-red{ background:linear-gradient(135deg,#c74e4e,#8d2a2a); }
+.book-card{ transition:.2s ease; border:none; box-shadow:0 5px 15px rgba(0,0,0,.08); border-radius:1rem; overflow:hidden; height:100%; }
+.book-card:hover{ transform:translateY(-6px); box-shadow:0 10px 24px rgba(0,0,0,.15); }
+.book-cover{ height:240px; object-fit:cover; width:100%; }
+.section-title{ font-weight:700; margin:2rem 0 1rem; }
+.badge-soft{ background:#efe3d5; color:#6a4f36; }
+.category-banner{ background:#fff; border-radius:1rem; padding:1rem; box-shadow:0 5px 15px rgba(0,0,0,.06); }
+.sticky-top-catalog{ position:sticky; top:90px; }
+.cart-icon-link{ position:relative; display:inline-flex; align-items:center; }
+.cart-badge{ position:absolute; top:-2px; right:-10px; background:#c95533; color:#fff; border-radius:999px; min-width:20px; height:20px; font-size:12px; display:flex; align-items:center; justify-content:center; padding:0 5px; }
+.profile-avatar,.nav-avatar{ width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid #efe3d5; }
+.profile-avatar{ width:120px; height:120px; border-width:4px; }
+.book-info-card{ background:#fff; border-radius:1rem; padding:1rem; box-shadow:0 5px 15px rgba(0,0,0,.08); }
+.sticky-summary{ position:sticky; top:90px; }
+.stretched-link-title:hover{ color:#8b5d3b !important; }
+.filter-link{ display:block; padding:.3rem 0; color:#2c2a28; text-decoration:none; }
+.filter-link.active, .filter-link:hover{ color:#8b5d3b; }
+.to-top-btn{ position:fixed; right:20px; bottom:20px; width:42px; height:42px; border-radius:50%; border:none; background:#8b5d3b; color:#fff; display:none; z-index:999; }
+.to-top-btn.show{ display:inline-flex; align-items:center; justify-content:center; }
+.review-carousel .carousel-item{ min-height:130px; }
+.wishlist-btn{ border:none; background:transparent; color:#c95533; font-size:1.2rem; }
+.page-link{ color:#8b5d3b; }
+.page-item.active .page-link{ background:#8b5d3b; border-color:#8b5d3b; }
