@@ -17,6 +17,11 @@ function fetchFeaturedBooks(string $flag, int $limit = 6): array
     if (!$pdo) return [];
 
     $stmt = $pdo->prepare("SELECT b.*, c.name AS category_name FROM books b JOIN categories c ON c.id=b.category_id WHERE b.$flag=1 ORDER BY b.created_at DESC LIMIT :limit");
+    $allowed = ['is_new', 'is_popular', 'is_recommended'];
+    if (!in_array($flag, $allowed, true)) return [];
+    $pdo = getPDO();
+    if (!$pdo) return [];
+    $stmt = $pdo->prepare("SELECT b.*, c.name AS category_name FROM books b JOIN categories c ON c.id=b.category_id WHERE {$flag}=1 ORDER BY b.created_at DESC LIMIT :limit");
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll();
@@ -43,6 +48,17 @@ function createContact(string $name, string $email, string $message): bool
 function buildBookFilters(array $filters, array &$params): string
 {
     $sql = ' WHERE 1=1 ';
+    return $stmt->execute(compact('name', 'email', 'message') + ['full_name' => $name]);
+}
+
+function fetchBooks(array $filters = []): array
+{
+    $pdo = getPDO();
+    if (!$pdo) return [];
+
+    $sql = 'SELECT b.*, c.name AS category_name FROM books b JOIN categories c ON c.id=b.category_id WHERE 1=1';
+    $params = [];
+
     if (!empty($filters['category_id'])) {
         $sql .= ' AND b.category_id = :category_id';
         $params['category_id'] = (int)$filters['category_id'];
@@ -103,6 +119,8 @@ function fetchBooks(array $filters = [], int $limit = 0, int $offset = 0): array
     $params = [];
     $sql = 'SELECT b.*, c.name AS category_name FROM books b JOIN categories c ON c.id=b.category_id';
     $sql .= buildBookFilters($filters, $params);
+        $params['search'] = '%' . $filters['search'] . '%';
+    }
 
     $sortMap = [
         'new' => 'b.created_at DESC',
@@ -136,6 +154,13 @@ function countBooks(array $filters = []): int
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     return (int)$stmt->fetchColumn();
+        'title' => 'b.title ASC'
+    ];
+    $sql .= ' ORDER BY ' . ($sortMap[$filters['sort'] ?? 'new'] ?? $sortMap['new']);
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll();
 }
 
 function fetchBookById(int $id): ?array
@@ -237,12 +262,15 @@ function updateUserPassword(int $userId, string $passwordHash): bool
     if (!$pdo) return false;
     $stmt = $pdo->prepare('UPDATE users SET password_hash=:password_hash WHERE id=:id');
     return $stmt->execute(['password_hash' => $passwordHash, 'id' => $userId]);
+    $stmt = $pdo->prepare('INSERT INTO users (role_id, full_name, email, phone, login, password_hash) VALUES (2, :full_name, :email, :phone, :login, :password_hash)');
+    return $stmt->execute($data);
 }
 
 function createOrder(array $payload, array $items): ?int
 {
     $pdo = getPDO();
     if (!$pdo || !$items) return null;
+    if (!$pdo) return null;
     try {
         $pdo->beginTransaction();
         do {
@@ -252,6 +280,7 @@ function createOrder(array $payload, array $items): ?int
         } while ((int)$check->fetchColumn() > 0);
 
         $stmt = $pdo->prepare('INSERT INTO orders (order_number, user_id, status_id, full_name, phone, email, delivery_method, pickup_point, delivery_address, comment, total_amount) VALUES (:order_number, :user_id, 1, :full_name, :phone, :email, :delivery_method, :pickup_point, :delivery_address, :comment, :total_amount)');
+        $stmt = $pdo->prepare('INSERT INTO orders (order_number, user_id, status_id, full_name, phone, email, delivery_method, delivery_address, comment, total_amount) VALUES (:order_number, :user_id, 1, :full_name, :phone, :email, :delivery_method, :delivery_address, :comment, :total_amount)');
         $stmt->execute($payload + ['order_number' => $orderNumber]);
         $orderId = (int)$pdo->lastInsertId();
 
@@ -267,6 +296,15 @@ function createOrder(array $payload, array $items): ?int
             $stockUpdateStmt->execute(['book_id' => (int)$item['book_id'], 'quantity' => $currentQty - (int)$item['quantity']]);
         }
 
+        $stockStmt = $pdo->prepare('UPDATE books SET quantity = quantity - :quantity WHERE id=:book_id AND quantity >= :quantity');
+
+        foreach ($items as $item) {
+            $itemStmt->execute(['order_id' => $orderId] + $item);
+            $stockStmt->execute(['book_id' => $item['book_id'], 'quantity' => $item['quantity']]);
+            if ($stockStmt->rowCount() === 0) {
+                throw new RuntimeException('Недостаточно товара на складе');
+            }
+        }
         $pdo->commit();
         return $orderId;
     } catch (Throwable $e) {
@@ -289,6 +327,7 @@ function fetchOrderById(int $orderId, int $userId = 0, bool $isAdmin = false): ?
     $stmt->execute($params);
     $order = $stmt->fetch();
     if (!$order) return null;
+
     $items = $pdo->prepare('SELECT oi.*, b.title, b.author FROM order_items oi JOIN books b ON b.id=oi.book_id WHERE oi.order_id=:id');
     $items->execute(['id' => $orderId]);
     $order['items'] = $items->fetchAll();
@@ -353,6 +392,8 @@ function updateOrderStatus(int $orderId, int $statusId): bool
     $pdo = getPDO();
     if (!$pdo) return false;
     return $pdo->prepare('UPDATE orders SET status_id=:status_id WHERE id=:id')->execute(['id' => $orderId, 'status_id' => $statusId]);
+    $stmt = $pdo->prepare('UPDATE orders SET status_id=:status_id WHERE id=:id');
+    return $stmt->execute(['id' => $orderId, 'status_id' => $statusId]);
 }
 
 function fetchUsers(): array
@@ -360,6 +401,7 @@ function fetchUsers(): array
     $pdo = getPDO();
     if (!$pdo) return [];
     return $pdo->query('SELECT u.id,u.full_name,u.email,u.phone,u.login,u.avatar,u.created_at,r.name AS role_name FROM users u JOIN roles r ON r.id=u.role_id ORDER BY u.created_at DESC')->fetchAll();
+    return $pdo->query('SELECT u.id,u.full_name,u.email,u.phone,u.login,u.created_at,r.name AS role_name FROM users u JOIN roles r ON r.id=u.role_id ORDER BY u.created_at DESC')->fetchAll();
 }
 
 function fetchContacts(): array
@@ -374,6 +416,7 @@ function createBook(array $data): bool
     $pdo = getPDO();
     if (!$pdo) return false;
     $stmt = $pdo->prepare('INSERT INTO books (category_id,title,author,publisher,publish_year,binding_type,paper_type,language,price,discount_percent,quantity,is_pickup_available,short_description,full_description,image,is_new,is_popular,is_recommended,is_coming_soon) VALUES (:category_id,:title,:author,:publisher,:publish_year,:binding_type,:paper_type,:language,:price,:discount_percent,:quantity,:is_pickup_available,:short_description,:full_description,:image,:is_new,:is_popular,:is_recommended,:is_coming_soon)');
+    $stmt = $pdo->prepare('INSERT INTO books (category_id,title,author,price,quantity,short_description,full_description,image,is_new,is_popular,is_recommended) VALUES (:category_id,:title,:author,:price,:quantity,:short_description,:full_description,:image,:is_new,:is_popular,:is_recommended)');
     return $stmt->execute($data);
 }
 
@@ -382,6 +425,7 @@ function updateBook(int $id, array $data): bool
     $pdo = getPDO();
     if (!$pdo) return false;
     $stmt = $pdo->prepare('UPDATE books SET category_id=:category_id,title=:title,author=:author,publisher=:publisher,publish_year=:publish_year,binding_type=:binding_type,paper_type=:paper_type,language=:language,price=:price,discount_percent=:discount_percent,quantity=:quantity,is_pickup_available=:is_pickup_available,short_description=:short_description,full_description=:full_description,image=:image,is_new=:is_new,is_popular=:is_popular,is_recommended=:is_recommended,is_coming_soon=:is_coming_soon WHERE id=:id');
+    $stmt = $pdo->prepare('UPDATE books SET category_id=:category_id,title=:title,author=:author,price=:price,quantity=:quantity,short_description=:short_description,full_description=:full_description,image=:image,is_new=:is_new,is_popular=:is_popular,is_recommended=:is_recommended WHERE id=:id');
     return $stmt->execute($data + ['id' => $id]);
 }
 
@@ -390,6 +434,8 @@ function deleteBook(int $id): bool
     $pdo = getPDO();
     if (!$pdo) return false;
     return $pdo->prepare('DELETE FROM books WHERE id=:id')->execute(['id' => $id]);
+    $stmt = $pdo->prepare('DELETE FROM books WHERE id=:id');
+    return $stmt->execute(['id' => $id]);
 }
 
 function createCategory(string $name): bool
@@ -397,6 +443,8 @@ function createCategory(string $name): bool
     $pdo = getPDO();
     if (!$pdo) return false;
     return $pdo->prepare('INSERT INTO categories (name) VALUES (:name)')->execute(['name' => $name]);
+    $stmt = $pdo->prepare('INSERT INTO categories (name) VALUES (:name)');
+    return $stmt->execute(['name' => $name]);
 }
 
 function deleteCategory(int $id): bool
@@ -404,4 +452,6 @@ function deleteCategory(int $id): bool
     $pdo = getPDO();
     if (!$pdo) return false;
     return $pdo->prepare('DELETE FROM categories WHERE id=:id')->execute(['id' => $id]);
+    $stmt = $pdo->prepare('DELETE FROM categories WHERE id=:id');
+    return $stmt->execute(['id' => $id]);
 }

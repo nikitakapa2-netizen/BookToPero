@@ -4,6 +4,7 @@
         <div>
             <h6 class="mb-1">Лист и Перо</h6>
             <small>Адрес: г. Москва, ул. Книжная, 10</small>
+            <small>Книжный интернет-магазин для учебного проекта.</small>
         </div>
         <div class="text-md-end">
             <div><i class="bi bi-envelope"></i> support@listpero.local</div>

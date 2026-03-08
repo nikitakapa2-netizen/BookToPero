@@ -35,6 +35,9 @@ include __DIR__ . '/includes/header.php';
 </td>
 <td><button class="btn btn-sm btn-outline-danger" name="remove" value="<?=$id?>">Удалить</button></td>
 </tr>
+<form method="post"><table class="table bg-white shadow-sm"><thead><tr><th>Книга</th><th>Цена</th><th>Количество</th><th>Сумма</th><th></th></tr></thead><tbody>
+<?php foreach($cart as $id=>$qty): $book=$books[$id]??null; if(!$book) continue; $sum=$qty*$book['price']; $total+=$sum; ?>
+<tr><td><?=e($book['title'])?></td><td><?=formatPrice((float)$book['price'])?></td><td style="width:120px"><input class="form-control" type="number" min="1" name="qty[<?=$id?>]" value="<?=$qty?>"></td><td><?=formatPrice((float)$sum)?></td><td><button class="btn btn-sm btn-outline-danger" name="remove" value="<?=$id?>">Удалить</button></td></tr>
 <?php endforeach; ?></tbody></table><div class="d-flex justify-content-between"><h4>Итого: <?=formatPrice((float)$total)?></h4><div><button class="btn btn-outline-primary" name="update" value="1">Обновить</button> <a class="btn btn-primary" href="checkout.php">Оформить заказ</a></div></div></form>
 <?php endif; ?></div>
 <?php include __DIR__ . '/includes/footer.php'; ?>

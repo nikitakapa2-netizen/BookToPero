@@ -19,6 +19,7 @@ $isAdminArea = str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/admin/');
     <link rel="stylesheet" href="<?= $assetPrefix ?>assets/css/style.css">
 </head>
 <body class="d-flex flex-column min-vh-100">
+<body>
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
     <div class="container">
         <a class="navbar-brand fw-bold" href="<?= $rootPrefix ?>index.php"><i class="bi bi-book-half"></i> Лист и Перо</a>
@@ -45,6 +46,13 @@ $isAdminArea = str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/admin/');
                         <a class="nav-link <?= isActivePage('profile.php') ? 'active' : '' ?>" href="<?= $rootPrefix ?>profile.php"><?= e($user['full_name']) ?></a>
                     </li>
                     <li class="nav-item"><a class="btn btn-outline-secondary btn-sm" href="<?= $rootPrefix ?>logout.php">Выход</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= $rootPrefix ?>catalog.php">Каталог</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= $rootPrefix ?>cart.php">Корзина</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= $rootPrefix ?>contacts.php">Контакты</a></li>
+                <?php if ($user): ?>
+                    <li class="nav-item"><a class="nav-link" href="<?= $rootPrefix ?>my_orders.php">Мои заказы</a></li>
+                    <?php if ($user['role_name'] === 'admin'): ?><li class="nav-item"><a class="nav-link" href="<?= $rootPrefix ?>admin/index.php">Админ</a></li><?php endif; ?>
+                    <li class="nav-item"><a class="btn btn-outline-secondary btn-sm" href="<?= $rootPrefix ?>logout.php">Выход (<?= e($user['login']) ?>)</a></li>
                 <?php else: ?>
                     <li class="nav-item"><a class="btn btn-primary btn-sm" href="<?= $rootPrefix ?>login.php">Вход</a></li>
                 <?php endif; ?>
@@ -53,6 +61,7 @@ $isAdminArea = str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/admin/');
     </div>
 </nav>
 <main class="pb-5 flex-grow-1">
+<main class="pb-5">
 <div class="container mt-3">
     <?php foreach (getFlashes() as $flash): ?>
         <div class="alert alert-<?= e($flash['type']) ?> alert-dismissible fade show">

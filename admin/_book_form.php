@@ -16,5 +16,12 @@
 <div class="col-12"><textarea class="form-control" name="short_description" required placeholder="Краткое описание"><?=e($book['short_description']??'')?></textarea></div>
 <div class="col-12"><textarea class="form-control" name="full_description" rows="4" required placeholder="Полное описание"><?=e($book['full_description']??'')?></textarea></div>
 <div class="col-12 d-flex gap-3 flex-wrap"><label><input type="checkbox" name="is_new" <?=!empty($book['is_new'])?'checked':''?>> Новинка</label><label><input type="checkbox" name="is_popular" <?=!empty($book['is_popular'])?'checked':''?>> Лидер продаж</label><label><input type="checkbox" name="is_recommended" <?=!empty($book['is_recommended'])?'checked':''?>> Рекомендуем</label><label><input type="checkbox" name="is_coming_soon" <?=!empty($book['is_coming_soon'])?'checked':''?>> Скоро в продаже</label></div>
+<div class="col-md-6"><input class="form-control" name="author" required placeholder="Автор" value="<?=e($book['author']??'')?>"></div>
+<div class="col-md-3"><input class="form-control" type="number" step="0.01" min="0.01" name="price" required placeholder="Цена" value="<?=e($book['price']??'')?>"></div>
+<div class="col-md-3"><input class="form-control" type="number" min="0" name="quantity" required placeholder="Остаток" value="<?=e($book['quantity']??'')?>"></div>
+<div class="col-12"><input class="form-control" name="image" required placeholder="URL изображения" value="<?=e($book['image']??'')?>"></div>
+<div class="col-12"><textarea class="form-control" name="short_description" required placeholder="Краткое описание"><?=e($book['short_description']??'')?></textarea></div>
+<div class="col-12"><textarea class="form-control" name="full_description" rows="4" required placeholder="Полное описание"><?=e($book['full_description']??'')?></textarea></div>
+<div class="col-12 d-flex gap-3"><label><input type="checkbox" name="is_new" <?=!empty($book['is_new'])?'checked':''?>> Новинка</label><label><input type="checkbox" name="is_popular" <?=!empty($book['is_popular'])?'checked':''?>> Популярное</label><label><input type="checkbox" name="is_recommended" <?=!empty($book['is_recommended'])?'checked':''?>> Рекомендуем</label></div>
 <div class="col-12"><button class="btn btn-primary">Сохранить</button></div>
 </form>
