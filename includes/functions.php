@@ -46,6 +46,11 @@ function cartItems(): array
     return $_SESSION['cart'] ?? [];
 }
 
+function cartCount(): int
+{
+    return array_sum(cartItems());
+}
+
 function addToCart(int $bookId, int $quantity = 1): void
 {
     if (!isset($_SESSION['cart'])) {
@@ -73,6 +78,32 @@ function clearCart(): void
     $_SESSION['cart'] = [];
 }
 
+function wishlistItems(): array
+{
+    return $_SESSION['wishlist'] ?? [];
+}
+
+function wishlistCount(): int
+{
+    return count(wishlistItems());
+}
+
+function inWishlist(int $bookId): bool
+{
+    return in_array($bookId, wishlistItems(), true);
+}
+
+function toggleWishlist(int $bookId): void
+{
+    $items = wishlistItems();
+    if (in_array($bookId, $items, true)) {
+        $_SESSION['wishlist'] = array_values(array_filter($items, fn($id) => (int)$id !== $bookId));
+    } else {
+        $items[] = $bookId;
+        $_SESSION['wishlist'] = array_values(array_unique(array_map('intval', $items)));
+    }
+}
+
 function generateOrderNumber(): string
 {
     return (string)random_int(10000000, 99999999);
@@ -81,4 +112,14 @@ function generateOrderNumber(): string
 function formatPrice(float $price): string
 {
     return number_format($price, 2, '.', ' ') . ' ' . CURRENCY;
+}
+
+function deliveryLabel(string $method): string
+{
+    return $method === 'delivery' ? 'Доставка' : 'Самовывоз';
+}
+
+function isActivePage(string $file): bool
+{
+    return basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '') === $file;
 }

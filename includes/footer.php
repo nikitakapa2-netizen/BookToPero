@@ -3,6 +3,7 @@
     <div class="container d-flex flex-column flex-md-row justify-content-between">
         <div>
             <h6 class="mb-1">Лист и Перо</h6>
+            <small>Адрес: г. Москва, ул. Книжная, 10</small>
             <small>Книжный интернет-магазин для учебного проекта.</small>
         </div>
         <div class="text-md-end">
@@ -11,6 +12,7 @@
         </div>
     </div>
 </footer>
+<button id="toTopBtn" class="to-top-btn" type="button"><i class="bi bi-arrow-up"></i></button>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?= $assetPrefix ?? '' ?>assets/js/main.js"></script>
 </body>

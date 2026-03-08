@@ -22,6 +22,19 @@ include __DIR__ . '/includes/header.php';
 ?>
 <div class="container py-4"><h1>Корзина</h1>
 <?php if(!$cart): ?><div class="alert alert-info">Корзина пуста.</div><?php else: ?>
+<form method="post"><table class="table bg-white shadow-sm"><thead><tr><th>Книга</th><th>Цена</th><th>Количество</th><th>Сумма</th><th>Наличие</th><th></th></tr></thead><tbody>
+<?php foreach($cart as $id=>$qty): $book=$books[$id]??null; if(!$book) continue; $sum=$qty*$book['price']; $total+=$sum; ?>
+<tr>
+<td><?=e($book['title'])?></td>
+<td><?=formatPrice((float)$book['price'])?></td>
+<td style="width:120px"><input class="form-control" type="number" min="1" name="qty[<?=$id?>]" value="<?=$qty?>"></td>
+<td><?=formatPrice((float)$sum)?></td>
+<td>
+  <?php if((int)$book['quantity']<=0): ?><span class="text-danger">Нет в наличии</span><?php else: ?><span class="text-success">Есть</span><?php endif; ?>
+  <?php if((int)$book['is_pickup_available']!==1): ?><div class="small text-warning">Самовывоз недоступен</div><?php endif; ?>
+</td>
+<td><button class="btn btn-sm btn-outline-danger" name="remove" value="<?=$id?>">Удалить</button></td>
+</tr>
 <form method="post"><table class="table bg-white shadow-sm"><thead><tr><th>Книга</th><th>Цена</th><th>Количество</th><th>Сумма</th><th></th></tr></thead><tbody>
 <?php foreach($cart as $id=>$qty): $book=$books[$id]??null; if(!$book) continue; $sum=$qty*$book['price']; $total+=$sum; ?>
 <tr><td><?=e($book['title'])?></td><td><?=formatPrice((float)$book['price'])?></td><td style="width:120px"><input class="form-control" type="number" min="1" name="qty[<?=$id?>]" value="<?=$qty?>"></td><td><?=formatPrice((float)$sum)?></td><td><button class="btn btn-sm btn-outline-danger" name="remove" value="<?=$id?>">Удалить</button></td></tr>
